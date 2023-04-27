@@ -4,12 +4,22 @@ import pandas as pd
 from tqdm import tqdm
 import multiprocessing
 
+
+from warnings import simplefilter
+from sklearn.exceptions import ConvergenceWarning
+
+simplefilter("ignore", category=ConvergenceWarning)
+
+
+from copy import deepcopy
 from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
+
+CONCURRENT_PROCESSES_CNT = 4
 
 
 def get_data():
@@ -36,7 +46,7 @@ def standard_scaling(X_train, X_test, apply):
     return X_train, X_test
 
 
-def pca(X_train, X_test, apply, n_components=10):
+def pca(X_train, X_test, apply, n_components=50):
     if apply:
         pca = PCA(n_components=n_components)
         X_train = pca.fit_transform(X_train)
@@ -44,13 +54,23 @@ def pca(X_train, X_test, apply, n_components=10):
     return X_train, X_test
 
 
-def get_random_shuffle(X_train, y_train, X_test, y_test, apply, seed=123):
+def augment_data(
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    apply: bool,
+    seed=123,
+):
     if apply:
         np.random.seed(seed)
-        idx = np.random.permutation(X_train.shape[1])
-        X_train = X_train[:, idx]
-        X_test = X_test[:, idx]
-    return X_train, y_train, X_test, y_test
+        mask = np.random.permutation(X_train.shape[0])[: X_train.shape[0] // 2]
+        X_train_augmented = (
+            X_train[mask].reshape(-1, 28, 28)[:, :, ::-1].reshape(-1, 28 * 28)
+        )
+        y_train_augmented = y_train[mask]
+        X_train = np.concatenate([X_train, X_train_augmented], axis=0)
+        y_train = np.concatenate([y_train, y_train_augmented], axis=0)
+
+    return X_train, y_train
 
 
 def train_model(X_train, y_train, model):
@@ -68,10 +88,8 @@ def evaluate(X_test, y_test, clf):
 
 def run_single(X_train, X_test, y_train, y_test, A, B, C, D):
     X_train, X_test = standard_scaling(X_train, X_test, apply=A)
+    X_train, y_train = augment_data(X_train, y_train, apply=C)
     X_train, X_test = pca(X_train, X_test, apply=B)
-    X_train, y_train, X_test, y_test = get_random_shuffle(
-        X_train, y_train, X_test, y_test, apply=C
-    )
     clf = train_model(X_train, y_train, model=D)
     return evaluate(X_test, y_test, clf)
 
@@ -109,11 +127,30 @@ def run(X, y):
     results_q = multiprocessing.Queue()
     factors = ["A", "B", "C", "D"]
     response = ["Y"]
+    processes = []
     for A, B, C, D in tqdm(itertools.product([True, False], repeat=4)):
-        p = SingleRunProcess(X_train, X_test, y_train, y_test, A, B, C, D, results_q)
-        p.start()
+        p = SingleRunProcess(
+            deepcopy(X_train),
+            deepcopy(X_test),
+            deepcopy(y_train),
+            deepcopy(y_test),
+            A,
+            B,
+            C,
+            D,
+            results_q,
+        )
+        processes.append(p)
 
-    for _ in tqdm(range(2**4)):
+    for idx, p in tqdm(enumerate(processes), desc="proc started"):
+        p.start()
+        if idx > CONCURRENT_PROCESSES_CNT:
+            processes[idx - CONCURRENT_PROCESSES_CNT].join()
+            results.append(results_q.get())
+
+    for idx, p in tqdm(
+        enumerate(processes[-CONCURRENT_PROCESSES_CNT:]), desc="proc joined"
+    ):
         p.join()
         results.append(results_q.get())
     df = pd.DataFrame(results, columns=factors + response)

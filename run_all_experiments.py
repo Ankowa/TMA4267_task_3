@@ -2,13 +2,13 @@ import numpy as np
 import itertools
 import pandas as pd
 from tqdm import tqdm
-import multiprocessing
 
 
 from warnings import simplefilter
-from sklearn.exceptions import ConvergenceWarning
+from sklearn.exceptions import ConvergenceWarning, DataConversionWarning
 
 simplefilter("ignore", category=ConvergenceWarning)
+simplefilter("ignore", category=DataConversionWarning)
 
 
 from copy import deepcopy
@@ -46,7 +46,7 @@ def standard_scaling(X_train, X_test, apply):
     return X_train, X_test
 
 
-def pca(X_train, X_test, apply, n_components=50):
+def pca(X_train, X_test, apply, n_components=10):
     if apply:
         pca = PCA(n_components=n_components)
         X_train = pca.fit_transform(X_train)
@@ -75,7 +75,7 @@ def augment_data(
 
 def train_model(X_train, y_train, model):
     if model:
-        clf = LogisticRegression(random_state=123)
+        clf = LogisticRegression(random_state=123, max_iter=5)
     else:
         clf = DecisionTreeClassifier(random_state=123)
     clf.fit(X_train, y_train)
@@ -83,7 +83,7 @@ def train_model(X_train, y_train, model):
 
 
 def evaluate(X_test, y_test, clf):
-    return clf.score(X_test, y_test)
+    return clf.score(X_test, y_test) * 100
 
 
 def run_single(X_train, X_test, y_train, y_test, A, B, C, D):
@@ -94,65 +94,15 @@ def run_single(X_train, X_test, y_train, y_test, A, B, C, D):
     return evaluate(X_test, y_test, clf)
 
 
-class SingleRunProcess(multiprocessing.Process):
-    def __init__(self, X_train, X_test, y_train, y_test, A, B, C, D, results_q):
-        multiprocessing.Process.__init__(self)
-        self.X_train = X_train
-        self.X_test = X_test
-        self.y_train = y_train
-        self.y_test = y_test
-        self.A = A
-        self.B = B
-        self.C = C
-        self.D = D
-        self.results_q = results_q
-
-    def run(self):
-        score = run_single(
-            self.X_train,
-            self.X_test,
-            self.y_train,
-            self.y_test,
-            self.A,
-            self.B,
-            self.C,
-            self.D,
-        )
-        self.results_q.put([self.A, self.B, self.C, self.D, score])
-
-
 def run(X, y):
     X_train, X_test, y_train, y_test = train_test_data(X, y)
     results = []
-    results_q = multiprocessing.Queue()
     factors = ["A", "B", "C", "D"]
     response = ["Y"]
-    processes = []
     for A, B, C, D in tqdm(itertools.product([True, False], repeat=4)):
-        p = SingleRunProcess(
-            deepcopy(X_train),
-            deepcopy(X_test),
-            deepcopy(y_train),
-            deepcopy(y_test),
-            A,
-            B,
-            C,
-            D,
-            results_q,
+        results.append(
+            [A, B, C, D, run_single(X_train, X_test, y_train, y_test, A, B, C, D)]
         )
-        processes.append(p)
-
-    for idx, p in tqdm(enumerate(processes), desc="proc started"):
-        p.start()
-        if idx > CONCURRENT_PROCESSES_CNT:
-            processes[idx - CONCURRENT_PROCESSES_CNT].join()
-            results.append(results_q.get())
-
-    for idx, p in tqdm(
-        enumerate(processes[-CONCURRENT_PROCESSES_CNT:]), desc="proc joined"
-    ):
-        p.join()
-        results.append(results_q.get())
     df = pd.DataFrame(results, columns=factors + response)
     df[factors] = df[factors].applymap(lambda x: {True: 1, False: -1}[x])
     for comb_size in range(1, len(factors) + 1):

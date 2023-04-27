@@ -40,10 +40,46 @@
 
 
 \section{Introduction}
+Classification task is about answering the following question: given a sample, determine to which of the known categories/classes it belongs. Training a machine learning algorithm to be able to perform well on this task can be challenging, since there is an infinte number of possible approaches, mainly in the space of the model selection, applied preprocessing of the traininig data and the method of training the algorithm, i.e. adjusting the values of its parameters to have desired values in order to have high classification accuracy on the evaluation set.
+
+In this assignment, I test the use of multiple machine learning techniques to enhance the training and compare the results on a MNIST (see \ref{subsec:mnist}) dataset. I also test the differences between two machine learning algorithms. Results are then analysed using $2^4$ factorial design. The goal of this assignment is to show that the choice of the machine learning algorithm and the preprocessing of the training data can have a significant impact on the performance of the algorithm.
+
+\section{Experimental setup}
+
+\subsection{Dataset}
+\label{subsec:dataset}
+In order to be able to evaluate the performance of a machine learning algorithm, a common approach is to divide the whole dataset into two parts: trainig set, and evaluation set. During the training process the algorithm does only "see" the training set samples. Then, after the training procedure is finished, it's being evaluated on the evaluation set, and the performance value is being reported. This approach is used in this assignment.
+
+I split the whole MNIST (see \ref{subsec:mnist}) dataset into 60k random training samples and 10k random evaluation samples. It's done once, and then on the training set I train algorithms in different setups. The same training set is used in all configurations of the factors to rule out the possible influence of random split of the dataset on the results, which can be the case if I randomly split the dataset for each configuration of the factors.
+
+The evaluation is then done on the evaluation set, similarly as above, the evaluation set is the same for all configurations of the factors.
+
+\subsection{Factors}
+In order to test a generic approach a machine learning practictioner usually takes first I introduce the following factors to the experiment:
+\begin{enumerate}
+    \item \textbf{Factor A: Scaling} - scaling the data to have zero mean and unit variance (see \ref{subsec:standard_scaler}). High value of this factor means that the data is scaled, low that it isn't. It has been shown that scaling the data can improve the performance of the machine learning algorithm, since the algorithm can converge faster. Although it is not always the case, since the pixel values of the MINST dataset are contained between 0 and 255, so scaling the data shouldn't have a significant impact on the performance of the algorithm.
+    \item \textbf{Factor B: PCA} - decomposing the data to lower dimension using PCA (see \ref{subsec:pca}). High value of this factor means that the data is decomposed, low that it isn't. By applying this transformation we inherently loose some information, but we then focus on saving as important information as possible in the new vector space. This approach can improve the performance of the machine learning algorithm in terms of overfitting.
+    \item \textbf{Factor C: Augmentation} - applying data augmentation (see \ref{subsec:augmentation}), i.e. adding new samples to the training set using random subset from the training set on which we apply the augmentation operation. High value of this factor means that the training data is augmented, low that it isn't. It's a commonly used technique to generate more samples for the model to learn from, without destroying the information contained in the data. More data to learn from is almost always beneficial for the performance of the machine learning algorithm.
+    \item \textbf{Factor D: Algorithm} - choosing the machine learning algorithm. High value of this factor means that the logistic regression algorithm (see \ref{subsec:logistic_regression}) is used, low that the decision tree classifier (see \ref{subsec:decision_tree}) is used. Decision tree classifiers have usually greater learning capacity than logistic regression, effectively being able to perform better on more complex tasks. However, they are more prone to overfitting, which can be a problem when the training data is small.
+\end{enumerate}
+
+The factors will stay at their levels, since the implementation of the experiment in the software assures it to be correct.
+
+\subsection{Response}
+A typical performance metric when it comes to the classification problem is the accuracy, which is calculated as follows:
+\begin{equation}
+    \text{accuracy} = 100\%\times\frac{\text{number of correctly classified samples}}{\text{total number of samples}}
+\end{equation}
+Although we have to be extra careful when using this metric, since it can be misleading. For example, if we have a dataset with 90\% of samples belonging to class A and 10\% belonging to class B, then a classifier that always predicts class A will have 90\% accuracy, which is a high value, but the classifier is useless. Such dataset is often called as "imbalanced", since the balance of the classes is skewed towards one (or more if dealing with multiclass classification task) of them. Fortunately, the MNIST dataset is balanced, i.e. the number of samples belonging to each class is similar. Therefore I use the accuracy as the response metric. It's continuous, since it's a percentage value, and it's bounded between 0 and 100\%, therefore it fits to the factorial design.
+
+During preparation to this experiment I also consider other metrics, such as precision, recall, F1 score, but they are not used in this assignment, since precision and recall are useful in cases when we care more about one class than the other, and F1 score is a combination of precision and recall, so it's not needed to be used in this assignment.
+
+The response is measured on the evaluation set (see \ref{subsec:dataset}). These measurements will be accurate, since they're done by software implementation of the experiment.
 
 \section{Background}
 
 \subsection{MNIST dataset}
+\label{subsec:mnist}
 The MNIST dataset is a collection of 70,000 images of handwritten digits. Each image is a 28x28 pixel grayscale image. The dataset is widely used for training and testing machine learning algorithms, especially in the field of computer vision.
 
 \subsection{Standard scaler}
@@ -55,6 +91,7 @@ Standard scaler is a method of scaling the data to have zero mean and unit varia
 where $x$ is the original feature vector, $\mu$ is the mean of the feature vector and $\sigma$ is the standard deviation of the feature vector. Note that in order to not influence our evaluation we fit the scaler (mean and the standard deviation) only on the training data and then apply the same transformation to the test data.
 
 \subsection{Principal component analysis}
+\label{subsec:pca}
 Principal component analysis (PCA) is a method of dimensionality reduction. It is used to reduce the number of features in the dataset. It is done by projecting the data onto a lower dimensional space. The new features are linear combinations of the original features. The new features are chosen in such a way that the variance of the data is maximised. The first principal component is the direction of the highest variance. The second principal component is the direction of the second highest variance and so on. The formula for PCA is given by:
 \begin{equation}
     X' = XW
@@ -62,6 +99,7 @@ Principal component analysis (PCA) is a method of dimensionality reduction. It i
 where $X$ is the original feature vector, $X'$ is the new feature vector, $W$ is the matrix of eigenvectors of the covariance matrix of $X$. Note that in order to not influence our evaluation we fit the PCA only on the training data and then apply the same transformation to the test data, same as in the \ref{subsec:standard_scaler}.
 
 \subsection{Data augmentation}
+\label{subsec:augmentation}
 Data augmentation is a method of increasing the size of the dataset by applying transformations to the original data. It is used to increase the size of the dataset when the original dataset is too small. It is also used to increase the robustness of the model. The transformations are chosen in such a way that they do not change the label of the data. In this assignment, I use the random vertical flip. It's a simple transformation that flips the image vertically. The transformation is applied with a probability of 0.5. The transformation is applied to the training data only. The effect of the transformation can be found in the Figure \ref{fig:augmentation}.
 
 \begin{figure}[h]
@@ -72,6 +110,7 @@ Data augmentation is a method of increasing the size of the dataset by applying 
 \end{figure}
 
 \subsection{Logistic regression}
+\label{subsec:logistic_regression}
 Logistic regression is a machine learning algorithm used for classification. It is a linear model that uses the logistic function to map the output to the probability of the class. The logistic function is given by:
 \begin{equation}
     \sigma(x) = \frac{1}{1 + e^{-x}}
@@ -96,6 +135,7 @@ The weights are updated iteratively using the following formula:
 where $\alpha$ is the learning rate.
 
 \subsection{Decision tree classifier}
+\label{subsec:decision_tree}
 Decision tree classifier is a machine learning algorithm used for classification. It is a non-linear model that uses a tree structure to map the output to the probability of the class. The tree structure is built by splitting the data into subsets based on the value of the feature. The splitting is done in such a way that the subsets are as pure as possible. The purity of the subset is measured by the Gini impurity. The Gini impurity is given by:
 \begin{equation}
     G = 1 - \sum_{i=1}^{n} p_i^2
@@ -131,25 +171,22 @@ Where $n=2^4$ is the number of observations. The estimated effect of the factor 
 \end{equation}
 
 \subsection{Estimation of the standard deviation}
+\label{subsec:std_estim}
 
 Because in the test I don't use replicates of the factor combinations, I can't use the estimator from the multiple linear regression, because in MLR:
 \begin{align}
     \mathbf{SSE} = \sum_{i=1}^{n} \left(y_i - \hat{y_i} \right)^2 \\
     \hat{\sigma}^2 = \frac{SSE}{n-p}
 \end{align}
-and in this case $n=p$, so the denominator is zero. Therefore I use the Method 2 from the course.
-\begin{enumerate}
-    \item Let $C_i$ be the estimated effect of the factor $i$.
-    \item Let $m_0$ be the median of the set $\left\{C_j\right\}$, $j=1,2,\dots,n$.
-    \item Let $s_0=1.5\times m_0$
-    \item Remove the $C_j$ for which $|C_j|\geq2.5\times s_0$.
-    \item Now let $m_1$ be the median of the remaining $C_j$.
-    \item The standard deviation is given by:
-          \begin{align}
-              PSE = 1.5\times m_1 \\
-              \widehat{\sigma_{effect}} = PSE
-          \end{align}
-\end{enumerate}
+and in this case $n=p$, so the denominator is zero. Therefore I use the Method 1 from the course. It's based on the assumption that for $m$ highier order $j$ the effect of the $j$-th order interaction is negligible. For these $j$-s we have:
+\begin{equation}
+    \widehat{Effect_j} \sim N(0, \sigma_{effect}^2)
+\end{equation}
+We can then estimate the standard deviation of the effects by:
+\begin{equation}
+    \widehat{\sigma_{effect}} = \sqrt{\frac{1}{m} \sum_{j=n-m}^{n} \widehat{Effect_j}^2}
+\end{equation}
+where $m$ is the number of highier order interactions we assume to be negligible, $n$ is the number of factors (including interactions).
 
 \subsection{Hypothesis testing}
 
@@ -157,17 +194,18 @@ The null hypothesis is that the factor has no effect on the accuracy. The altern
 \begin{equation}
     T_j = \frac{\widehat{Effect_j}}{\widehat{\sigma_{effect}}}
 \end{equation}
-Because we used the Method 2 of inferring the estimated standard deviation we have:
+Because we use the Method 1 (see Section \ref{subsec:std_estim}) of inferring the estimated standard deviation we have:
 \begin{equation}
-    T_j \sim t_{\frac{m_0}{3}}
+    T_j \sim t_{m}
 \end{equation}
-where $m_0$ is the median of the set $\left\{C_j\right\}$, $j=1,2,\dots,n$, and $t$ is the Student's t-distribution.
+where $m$ is the number of highier order interactions we assume to be negligible.
 
 At a significance level $\alpha$ the null hypothesis is rejected if:
 \begin{equation}
-    |T_j| \geq t_{\frac{\alpha}{2}, \frac{m_0}{3}}
+    |T_j| \geq t_{\frac{\alpha}{2}, m}
 \end{equation}
 
+\section{Experiments}
 
 
 \end{document}

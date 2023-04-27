@@ -44,38 +44,6 @@ Classification task is about answering the following question: given a sample, d
 
 In this assignment, I test the use of multiple machine learning techniques to enhance the training and compare the results on a MNIST (see \ref{subsec:mnist}) dataset. I also test the differences between two machine learning algorithms. Results are then analysed using $2^4$ factorial design. The goal of this assignment is to show that the choice of the machine learning algorithm and the preprocessing of the training data can have a significant impact on the performance of the algorithm.
 
-\section{Experimental setup}
-
-\subsection{Dataset}
-\label{subsec:dataset}
-In order to be able to evaluate the performance of a machine learning algorithm, a common approach is to divide the whole dataset into two parts: trainig set, and evaluation set. During the training process the algorithm does only "see" the training set samples. Then, after the training procedure is finished, it's being evaluated on the evaluation set, and the performance value is being reported. This approach is used in this assignment.
-
-I split the whole MNIST (see \ref{subsec:mnist}) dataset into 60k random training samples and 10k random evaluation samples. It's done once, and then on the training set I train algorithms in different setups. The same training set is used in all configurations of the factors to rule out the possible influence of random split of the dataset on the results, which can be the case if I randomly split the dataset for each configuration of the factors.
-
-The evaluation is then done on the evaluation set, similarly as above, the evaluation set is the same for all configurations of the factors.
-
-\subsection{Factors}
-In order to test a generic approach a machine learning practictioner usually takes first I introduce the following factors to the experiment:
-\begin{enumerate}
-    \item \textbf{Factor A: Scaling} - scaling the data to have zero mean and unit variance (see \ref{subsec:standard_scaler}). High value of this factor means that the data is scaled, low that it isn't. It has been shown that scaling the data can improve the performance of the machine learning algorithm, since the algorithm can converge faster. Although it is not always the case, since the pixel values of the MINST dataset are contained between 0 and 255, so scaling the data shouldn't have a significant impact on the performance of the algorithm.
-    \item \textbf{Factor B: PCA} - decomposing the data to lower dimension using PCA (see \ref{subsec:pca}). High value of this factor means that the data is decomposed, low that it isn't. By applying this transformation we inherently loose some information, but we then focus on saving as important information as possible in the new vector space. This approach can improve the performance of the machine learning algorithm in terms of overfitting.
-    \item \textbf{Factor C: Augmentation} - applying data augmentation (see \ref{subsec:augmentation}), i.e. adding new samples to the training set using random subset from the training set on which we apply the augmentation operation. High value of this factor means that the training data is augmented, low that it isn't. It's a commonly used technique to generate more samples for the model to learn from, without destroying the information contained in the data. More data to learn from is almost always beneficial for the performance of the machine learning algorithm.
-    \item \textbf{Factor D: Algorithm} - choosing the machine learning algorithm. High value of this factor means that the logistic regression algorithm (see \ref{subsec:logistic_regression}) is used, low that the decision tree classifier (see \ref{subsec:decision_tree}) is used. Decision tree classifiers have usually greater learning capacity than logistic regression, effectively being able to perform better on more complex tasks. However, they are more prone to overfitting, which can be a problem when the training data is small.
-\end{enumerate}
-
-The factors will stay at their levels, since the implementation of the experiment in the software assures it to be correct.
-
-\subsection{Response}
-A typical performance metric when it comes to the classification problem is the accuracy, which is calculated as follows:
-\begin{equation}
-    \text{accuracy} = 100\%\times\frac{\text{number of correctly classified samples}}{\text{total number of samples}}
-\end{equation}
-Although we have to be extra careful when using this metric, since it can be misleading. For example, if we have a dataset with 90\% of samples belonging to class A and 10\% belonging to class B, then a classifier that always predicts class A will have 90\% accuracy, which is a high value, but the classifier is useless. Such dataset is often called as "imbalanced", since the balance of the classes is skewed towards one (or more if dealing with multiclass classification task) of them. Fortunately, the MNIST dataset is balanced, i.e. the number of samples belonging to each class is similar. Therefore I use the accuracy as the response metric. It's continuous, since it's a percentage value, and it's bounded between 0 and 100\%, therefore it fits to the factorial design.
-
-During preparation to this experiment I also consider other metrics, such as precision, recall, F1 score, but they are not used in this assignment, since precision and recall are useful in cases when we care more about one class than the other, and F1 score is a combination of precision and recall, so it's not needed to be used in this assignment.
-
-The response is measured on the evaluation set (see \ref{subsec:dataset}). These measurements will be accurate, since they're done by software implementation of the experiment.
-
 \section{Background}
 
 \subsection{MNIST dataset}
@@ -147,6 +115,7 @@ where $p_i$ is the probability of the class $i$ in the subset. The decision tree
 where $p_i$ is the probability of the class $i$ in the subset.
 
 \section{\texorpdfstring{$2^k$} \text{ Factorial design}}
+\label{sec:factorial_design}
 
 \subsection{Effects estimation}
 In this assignment, I use $2^4$ factorial design to analyse the results. The factors tested are: applying scaling, decomposing the data to lower dimension using PCA, applying data augmentation and different machine learning algorithms: logistic regression and decision tree classifier. The results are analysed using the following formula:
@@ -189,6 +158,7 @@ We can then estimate the standard deviation of the effects by:
 where $m$ is the number of highier order interactions we assume to be negligible, $n$ is the number of factors (including interactions).
 
 \subsection{Hypothesis testing}
+\label{subsec:hypothesis_testing}
 
 The null hypothesis is that the factor has no effect on the accuracy. The alternative hypothesis is that the factor has an effect on the accuracy. The test statistic is given by:
 \begin{equation}
@@ -205,7 +175,107 @@ At a significance level $\alpha$ the null hypothesis is rejected if:
     |T_j| \geq t_{\frac{\alpha}{2}, m}
 \end{equation}
 
-\section{Experiments}
+\section{Experimental setup}
 
+\subsection{Dataset}
+\label{subsec:dataset}
+In order to be able to evaluate the performance of a machine learning algorithm, a common approach is to divide the whole dataset into two parts: training set, and evaluation set. During the training process the algorithm does only "see" the training set samples. Then, after the training procedure is finished, it's being evaluated on the evaluation set, and the performance value is being reported. This approach is used in this assignment.
 
+I split the whole MNIST (see \ref{subsec:mnist}) dataset into 60k random training samples and 10k random evaluation samples. It's done once, and then on the training set I train algorithms in different setups. The same training set is used in all configurations of the factors to rule out the possible influence of random split of the dataset on the results, which can be the case if I randomly split the dataset for each configuration of the factors.
+
+The evaluation is then done on the evaluation set, similarly as above, the evaluation set is the same for all configurations of the factors.
+
+\subsection{Factors}
+In order to test a generic approach a machine learning practictioner usually takes first I introduce the following factors to the experiment:
+\begin{enumerate}
+    \item \textbf{Factor A: Scaling} - scaling the data to have zero mean and unit variance (see \ref{subsec:standard_scaler}). High value of this factor means that the data is scaled, low that it isn't. It has been shown that scaling the data can improve the performance of the machine learning algorithm, since the algorithm can converge faster. Although it is not always the case, since the pixel values of the MINST dataset are contained between 0 and 255, so scaling the data shouldn't have a significant impact on the performance of the algorithm.
+    \item \textbf{Factor B: PCA} - decomposing the data to lower dimension using PCA (see \ref{subsec:pca}). High value of this factor means that the data is decomposed, low that it isn't. By applying this transformation we inherently loose some information, but we then focus on saving as important information as possible in the new vector space. This approach can improve the performance of the machine learning algorithm in terms of overfitting.
+    \item \textbf{Factor C: Augmentation} - applying data augmentation (see \ref{subsec:augmentation}), i.e. adding new samples to the training set using random subset from the training set on which we apply the augmentation operation. High value of this factor means that the training data is augmented, low that it isn't. It's a commonly used technique to generate more samples for the model to learn from, without destroying the information contained in the data. More data to learn from is almost always beneficial for the performance of the machine learning algorithm.
+    \item \textbf{Factor D: Algorithm} - choosing the machine learning algorithm. High value of this factor means that the logistic regression algorithm (see \ref{subsec:logistic_regression}) is used, low that the decision tree classifier (see \ref{subsec:decision_tree}) is used. Decision tree classifiers have usually greater learning capacity than logistic regression, effectively being able to perform better on more complex tasks. However, they are more prone to overfitting, which can be a problem when the training data is small.
+\end{enumerate}
+
+The factors will stay at their levels, since the implementation of the experiment in the software assures it to be correct.
+
+\subsection{Response}
+A typical performance metric when it comes to the classification problem is the accuracy, which is calculated as follows:
+\begin{equation}
+    \text{accuracy} = 100\%\times\frac{\text{number of correctly classified samples}}{\text{total number of samples}}
+\end{equation}
+Although we have to be extra careful when using this metric, since it can be misleading. For example, if we have a dataset with 90\% of samples belonging to class A and 10\% belonging to class B, then a classifier that always predicts class A will have 90\% accuracy, which is a high value, but the classifier is useless. Such dataset is often called as "imbalanced", since the balance of the classes is skewed towards one (or more if dealing with multiclass classification task) of them. Fortunately, the MNIST dataset is balanced, i.e. the number of samples belonging to each class is similar. Therefore I use the accuracy as the response metric. It's continuous, since it's a percentage value, and it's bounded between 0 and 100\%, therefore it fits to the factorial design.
+
+During preparation to this experiment I also consider other metrics, such as precision, recall, F1 score, but they are not used in this assignment, since precision and recall are useful in cases when we care more about one class than the other, and F1 score is a combination of precision and recall, so it's not needed to be used in this assignment.
+
+The response is measured on the evaluation set (see \ref{subsec:dataset}). These measurements will be accurate, since they're done by software implementation of the experiment.
+
+\subsection{Design}
+The design of the experiment is a full factorial design (see \ref{sec:factorial_design}), since all factors are at their levels. The number of runs is $2^4 = 16$, since we have 4 factors, and each factor has 2 levels. Blocking is not used, all experiments are conducted in a single run. Replicates might be desirable, in order to mitigate the influence of the randomness of the dataset split. They can be done by running the same set of combinations with a multiple random splits of the dataset (see \ref{subsec:dataset}), but it's not done in this assignment.
+
+When it comes to the standard deviation estimation for the fators effects estimates I follow the approach described in \ref{subsec:std_estim}. $m$ in this case is selected to contain all interactions of three or more factors, in this case $m=5$.
+
+\subsection{Software implementation}
+
+The software implementation of the experiment is done in Python 3.10 using classic machine learning libraries: scikit-learn (algorithms), numpy and pandas (data manipulation). The code is available in the \url{https://github.com/Ankowa/TMA4267_task_3/blob/main/run_all_experiments.py}.
+
+\section{Results}
+
+Final results are in Table \ref{tab:design_matrix} and the factors estimated effects are in the Figure \ref{fig:factors_effect}.
+
+\begin{table}[!ht]
+    \centering
+    \resizebox{\textwidth}{!}{
+        \begin{tabular}{|r|r|r|r|r|r|r|r|r|r|r|r|r|r|r|r|r|r|}
+            \textbf{} & \textbf{intercept} & \textbf{A} & \textbf{B} & \textbf{C} & \textbf{D} & \textbf{AB} & \textbf{AC} & \textbf{AD} & \textbf{BC} & \textbf{BD} & \textbf{CD} & \textbf{ABC} & \textbf{ABD} & \textbf{ACD} & \textbf{BCD} & \textbf{ABCD} & \textbf{Y} \\ \hline
+            0         & 1                  & 1          & 1          & 1          & 1          & 1           & 1           & 1           & 1           & 1           & 1           & 1            & 1            & 1            & 1            & 1             & 72.38      \\
+            1         & 1                  & 1          & 1          & 1          & -1         & 1           & 1           & -1          & 1           & -1          & -1          & 1            & -1           & -1           & -1           & -1            & 77.56      \\
+            2         & 1                  & 1          & 1          & -1         & 1          & 1           & -1          & 1           & -1          & 1           & -1          & -1           & 1            & -1           & -1           & -1            & 77.65      \\
+            3         & 1                  & 1          & 1          & -1         & -1         & 1           & -1          & -1          & -1          & -1          & 1           & -1           & -1           & 1            & 1            & 1             & 82.16      \\
+            4         & 1                  & 1          & -1         & 1          & 1          & -1          & 1           & 1           & -1          & -1          & 1           & -1           & -1           & 1            & -1           & -1            & 85.39      \\
+            5         & 1                  & 1          & -1         & 1          & -1         & -1          & 1           & -1          & -1          & 1           & -1          & -1           & 1            & -1           & 1            & 1             & 86.98      \\
+            6         & 1                  & 1          & -1         & -1         & 1          & -1          & -1          & 1           & 1           & -1          & -1          & 1            & -1           & -1           & 1            & 1             & 89.49      \\
+            7         & 1                  & 1          & -1         & -1         & -1         & -1          & -1          & -1          & 1           & 1           & 1           & 1            & 1            & 1            & -1           & -1            & 87.46      \\
+            8         & 1                  & -1         & 1          & 1          & 1          & -1          & -1          & -1          & 1           & 1           & 1           & -1           & -1           & -1           & 1            & -1            & 74.34      \\
+            9         & 1                  & -1         & 1          & 1          & -1         & -1          & -1          & 1           & 1           & -1          & -1          & -1           & 1            & 1            & -1           & 1             & 79.97      \\
+            10        & 1                  & -1         & 1          & -1         & 1          & -1          & 1           & -1          & -1          & 1           & -1          & 1            & -1           & 1            & -1           & 1             & 77.87      \\
+            11        & 1                  & -1         & 1          & -1         & -1         & -1          & 1           & 1           & -1          & -1          & 1           & 1            & 1            & -1           & 1            & -1            & 82.73      \\
+            12        & 1                  & -1         & -1         & 1          & 1          & 1           & -1          & -1          & -1          & -1          & 1           & 1            & 1            & -1           & -1           & 1             & 79.32      \\
+            13        & 1                  & -1         & -1         & 1          & -1         & 1           & -1          & 1           & -1          & 1           & -1          & 1            & -1           & 1            & 1            & -1            & 84.36      \\
+            14        & 1                  & -1         & -1         & -1         & 1          & 1           & 1           & -1          & 1           & -1          & -1          & -1           & 1            & 1            & 1            & -1            & 83.98      \\
+            15        & 1                  & -1         & -1         & -1         & -1         & 1           & 1           & 1           & 1           & 1           & 1           & -1           & -1           & -1           & -1           & 1             & 87.49      \\
+        \end{tabular}
+    }
+    \caption{Design matrix}
+    \label{tab:design_matrix}
+\end{table}
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\textwidth]{factors\_effect.png}
+    \caption{Factors estimated effect. The x axis corresponding to the effect value is logarithmic. Green bar means statistically significant, red bar means not statistically significant.}
+    \label{fig:factors_effect}
+\end{figure}
+
+\subsection{Statistical significance}
+
+Following \ref{subsec:std_estim} we have:
+\begin{gather}
+    \widehat{\sigma_{effect}} = \sqrt{\frac{1}{m} \sum_{j=n-m}^{n} \widehat{Effect_j}^2} \\
+    \widehat{\sigma_{effect}} = \sqrt{\frac{1}{5} \sum_{j=11}^{16} \widehat{Effect_j}^2} \\
+    \widehat{\sigma_{effect}} = \sqrt{\frac{1}{5}\times\left[
+            \left(-0.84875\right)^2
+            + \left(-1.02375\right)^2
+            + \left(-0.24875\right)^2
+            + \left(0.46375\right)^2
+            + \left(0.27375\right)^2
+            \right]}                                                                             \\
+    \widehat{\sigma_{effect}} = 0.65
+\end{gather}
+Following \ref{subsec:hypothesis_testing}, for a confidence level of $\alpha=95\%$ we have:
+\begin{equation}
+    t_{0.975, 5} = 2.571
+\end{equation}
+We test against the $H_0$ hypothesis for each factor $i$:
+\begin{equation}
+    \left| \frac{\widehat{Effect_i}}{\widehat{\sigma_{effect}}} \right| \geq t_{0.975, 5}
+\end{equation}
+Results are shown in Figure \ref{fig:factors_effect}.
 \end{document}

@@ -109,7 +109,11 @@ def run(X, y):
         for comb in itertools.combinations(factors, comb_size):
             df["".join(comb)] = df[list(comb)].prod(axis=1)
 
-    df = df[[c for c in df.columns if c != "Y"] + ["Y"]]
+    df["intercept"] = 1
+    df = df[
+        ["intercept"] + [c for c in df.columns if c != "Y" and c != "intercept"] + ["Y"]
+    ]
+    df.Y = df.Y.apply(lambda x: round(x, 2))
     return df
 
 

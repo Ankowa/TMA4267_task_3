@@ -1,2 +1,9 @@
 .venv
 data/
+*.aux
+*.log
+*.out
+*.pdf
+*.synctex.gz
+*.fls
+*.fdb_latexmk

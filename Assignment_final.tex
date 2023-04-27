@@ -1,0 +1,173 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+
+
+\usepackage[final]{neurips_2023}
+
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+
+
+\title{Classification problem on MNIST dataset}
+
+
+
+\author{%
+  Antoni Kowalczuk \\
+}
+
+
+\begin{document}
+
+
+\maketitle
+
+
+\begin{abstract}
+    Training a machine learning algorithm for classification with high accuracy requires testing multiple training setups. In this assignment, I test the use of multiple machine learning techniques to enhance the training and compare the results on a MNIST dataset. Results are then analysed using $2^4$ factorial design. Factors tested are: applying scaling, decomposing the data to lower dimension using PCA, applying data augmentation and different machine learning algorithms: logistic regression and decision tree classifier.
+\end{abstract}
+
+
+\section{Introduction}
+
+\section{Background}
+
+\subsection{MNIST dataset}
+The MNIST dataset is a collection of 70,000 images of handwritten digits. Each image is a 28x28 pixel grayscale image. The dataset is widely used for training and testing machine learning algorithms, especially in the field of computer vision.
+
+\subsection{Standard scaler}
+\label{subsec:standard_scaler}
+Standard scaler is a method of scaling the data to have zero mean and unit variance. It is a common preprocessing step in machine learning algorithms. It is used to ensure that the data is not biased towards any particular feature. It is also used to ensure that the data is not dominated by features with large values. Data transformation is done by subtracting the mean and dividing by the standard deviation. The formula for standard scaler is given by:
+\begin{equation}
+    x' = \frac{x - \mu}{\sigma}
+\end{equation}
+where $x$ is the original feature vector, $\mu$ is the mean of the feature vector and $\sigma$ is the standard deviation of the feature vector. Note that in order to not influence our evaluation we fit the scaler (mean and the standard deviation) only on the training data and then apply the same transformation to the test data.
+
+\subsection{Principal component analysis}
+Principal component analysis (PCA) is a method of dimensionality reduction. It is used to reduce the number of features in the dataset. It is done by projecting the data onto a lower dimensional space. The new features are linear combinations of the original features. The new features are chosen in such a way that the variance of the data is maximised. The first principal component is the direction of the highest variance. The second principal component is the direction of the second highest variance and so on. The formula for PCA is given by:
+\begin{equation}
+    X' = XW
+\end{equation}
+where $X$ is the original feature vector, $X'$ is the new feature vector, $W$ is the matrix of eigenvectors of the covariance matrix of $X$. Note that in order to not influence our evaluation we fit the PCA only on the training data and then apply the same transformation to the test data, same as in the \ref{subsec:standard_scaler}.
+
+\subsection{Data augmentation}
+Data augmentation is a method of increasing the size of the dataset by applying transformations to the original data. It is used to increase the size of the dataset when the original dataset is too small. It is also used to increase the robustness of the model. The transformations are chosen in such a way that they do not change the label of the data. In this assignment, I use the random vertical flip. It's a simple transformation that flips the image vertically. The transformation is applied with a probability of 0.5. The transformation is applied to the training data only. The effect of the transformation can be found in the Figure \ref{fig:augmentation}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{vertical\_flip.png}
+    \caption{Effect of the data augmentation}
+    \label{fig:augmentation}
+\end{figure}
+
+\subsection{Logistic regression}
+Logistic regression is a machine learning algorithm used for classification. It is a linear model that uses the logistic function to map the output to the probability of the class. The logistic function is given by:
+\begin{equation}
+    \sigma(x) = \frac{1}{1 + e^{-x}}
+\end{equation}
+The logistic regression model output is given by:
+\begin{equation}
+    \hat{y} = \sigma(\beta X)
+\end{equation}
+where $\hat{y}$ is the predicted label, $\beta$ is the weight vector and $X$ is the feature vector. The model is trained using gradient descent on the loss function, which is given by:
+\begin{equation}
+    L(\beta) = -\sum_{i=1}^{n} y_i \log(\hat{y_i}) + (1 - y_i) \log(1 - \hat{y_i})
+\end{equation}
+where $y_i$ is the true label and $\hat{y_i}$ is the predicted label.
+The gradient:
+\begin{equation}
+    \nabla L(\beta) = X^T(\hat{y} - y)
+\end{equation}
+The weights are updated iteratively using the following formula:
+\begin{equation}
+    \beta = \beta - \alpha \nabla L(\beta)
+\end{equation}
+where $\alpha$ is the learning rate.
+
+\subsection{Decision tree classifier}
+Decision tree classifier is a machine learning algorithm used for classification. It is a non-linear model that uses a tree structure to map the output to the probability of the class. The tree structure is built by splitting the data into subsets based on the value of the feature. The splitting is done in such a way that the subsets are as pure as possible. The purity of the subset is measured by the Gini impurity. The Gini impurity is given by:
+\begin{equation}
+    G = 1 - \sum_{i=1}^{n} p_i^2
+\end{equation}
+where $p_i$ is the probability of the class $i$ in the subset. The decision tree classifier model output is given by:
+\begin{equation}
+    \hat{y} = \arg\max_{i} p_i
+\end{equation}
+where $p_i$ is the probability of the class $i$ in the subset.
+
+\section{\texorpdfstring{$2^k$} \text{ Factorial design}}
+
+\subsection{Effects estimation}
+In this assignment, I use $2^4$ factorial design to analyse the results. The factors tested are: applying scaling, decomposing the data to lower dimension using PCA, applying data augmentation and different machine learning algorithms: logistic regression and decision tree classifier. The results are analysed using the following formula:
+\begin{equation}
+    y = \beta_0 + \sum_{i=1}^{k} \beta_i x_i + \sum_{i=1}^{k} \sum_{j=i+1}^{k} \beta_{ij} x_i x_j + \sum_{i=1}^{k} \sum_{j=i+1}^{k} \sum_{l=j+1}^{k} \beta_{ijl} x_i x_j x_l + \beta_{1234} x_1 x_2 x_3 x_4
+\end{equation}
+where $y$ is the accuracy, our response variable, $x_i$ is the factor $i$ and $\beta_i$ is the coefficient of the factor $i$. The factors are either $1$ (at high value) or $-1$ (at low value). The factor $ij$ denotes the interaction between the factor $i$ and the factor $j$, and $\beta_{ij}$ the coefficient of the factor $ij$. The factor $1234$ denotes the interaction between all the factors.
+
+The covariates create a $2^4\times2^4$ matrix, denoted $\mathbf{X}$, with a first column of ones. The response variable vector is denoted by $\mathbf{Y}$, and the vector of coefficients by $\beta$ (first element being an intercept). We don't know the values of the coefficients, therefore we need to obtain the estimated values of the coefficients. The formula for it is as follows:
+\begin{equation}
+    \hat{\beta} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{Y}
+\end{equation}
+Since the columns of the design matrix are orthogonal, we can simplify:
+\begin{align}
+    \mathbf{X^TX} = n\mathbf{I}                              \\
+    \left(\mathbf{X^TX} \right)^{-1} = \frac{1}{n}\mathbf{I} \\
+    \hat{\beta} = \frac{1}{n}\mathbf{X^TY}
+\end{align}
+Where $n=2^4$ is the number of observations. The estimated effect of the factor $i$ is given by:
+\begin{equation}
+    \widehat{Effect_i} = 2\hat{\beta_i}
+\end{equation}
+
+\subsection{Estimation of the standard deviation}
+
+Because in the test I don't use replicates of the factor combinations, I can't use the estimator from the multiple linear regression, because in MLR:
+\begin{align}
+    \mathbf{SSE} = \sum_{i=1}^{n} \left(y_i - \hat{y_i} \right)^2 \\
+    \hat{\sigma}^2 = \frac{SSE}{n-p}
+\end{align}
+and in this case $n=p$, so the denominator is zero. Therefore I use the Method 2 from the course.
+\begin{enumerate}
+    \item Let $C_i$ be the estimated effect of the factor $i$.
+    \item Let $m_0$ be the median of the set $\left\{C_j\right\}$, $j=1,2,\dots,n$.
+    \item Let $s_0=1.5\times m_0$
+    \item Remove the $C_j$ for which $|C_j|\geq2.5\times s_0$.
+    \item Now let $m_1$ be the median of the remaining $C_j$.
+    \item The standard deviation is given by:
+          \begin{align}
+              PSE = 1.5\times m_1 \\
+              \widehat{\sigma_{effect}} = PSE
+          \end{align}
+\end{enumerate}
+
+\subsection{Hypothesis testing}
+
+The null hypothesis is that the factor has no effect on the accuracy. The alternative hypothesis is that the factor has an effect on the accuracy. The test statistic is given by:
+\begin{equation}
+    T_j = \frac{\widehat{Effect_j}}{\widehat{\sigma_{effect}}}
+\end{equation}
+Because we used the Method 2 of inferring the estimated standard deviation we have:
+\begin{equation}
+    T_j \sim t_{\frac{m_0}{3}}
+\end{equation}
+where $m_0$ is the median of the set $\left\{C_j\right\}$, $j=1,2,\dots,n$, and $t$ is the Student's t-distribution.
+
+At a significance level $\alpha$ the null hypothesis is rejected if:
+\begin{equation}
+    |T_j| > t_{\frac{\alpha}{2}, \frac{m_0}{3}}
+\end{equation}
+
+
+
+\end{document}

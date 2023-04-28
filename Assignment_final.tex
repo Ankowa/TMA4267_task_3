@@ -26,7 +26,7 @@
 \maketitle
 
 \section{Introduction}
-The classification task is about answering the following question: given a sample, determine which known categories/classes it belongs. Training a machine learning algorithm to be able to perform well on this task can be challenging since there is an infinite number of possible approaches, mainly in the space of the model selection, applied preprocessing of the training data, and the method of training the algorithm, i.e., adjusting the values of its parameters to have desired values to have high classification accuracy on the evaluation set.
+The classification task is about answering the following question: given a sample, determine which known categories/classes it belongs. Training a machine learning algorithm to perform well on this task can be challenging. There are infinite possible approaches, mainly in the space of the model selection, applied preprocessing of the training data, and the method of training the algorithm. Training, in this case, means adjusting the values of its parameters to have desired values to have high classification accuracy on the evaluation set.
 
 In this assignment, I test multiple machine learning techniques to enhance the training and compare the results on an MNIST dataset (see \ref{subsec:mnist}). I also test the differences between the two machine learning algorithms. Results are then analyzed using $2^4$ factorial design. This assignment aims to show that the machine learning algorithm's choice and the training data preprocessing can significantly impact the algorithm's performance.
 
@@ -50,7 +50,7 @@ A standard scaler is a method of scaling the data to have zero mean and unit var
 \begin{equation}
     x' = \frac{x - \mu}{\sigma}
 \end{equation}
-where $x$ is the original feature vector, $\mu$ is the mean of the feature vector and $\sigma$ is the standard deviation of the feature vector. Note that to avoid influencing our evaluation, we only fit the scaler (mean and the standard deviation) on the training data and then apply the same transformation to the test data.
+where $x$ is the original feature vector, $\mu$ is the mean of the feature vector and $\sigma$ is the standard deviation of the feature vector. Note that we only fit the scaler on the training data to avoid influencing our evaluation and then apply the same transformation to the test data.
 
 \subsection{Principal component analysis}
 \label{subsec:pca}
@@ -64,13 +64,15 @@ where $X$ is the original feature vector, $X'$ is the new feature vector, $W$ is
 \label{subsec:augmentation}
 Data augmentation is a method of increasing the size of the dataset by applying transformations to the original data. It is used to increase the size of the dataset when the original dataset is too small. It is also used to increase the robustness of the model. The transformations are chosen in such a way that they do not change the label of the data. In this assignment, I use the random vertical flip. It's a simple transformation that flips the image vertically. The transformation is applied with a probability of 0.5. The transformation is applied to the training data only. The effect of the transformation can be found in Figure \ref{fig:augmentation}.
 
+
+Note that here we only aim to augment the training set. The evaluation set is left unchanged.
+
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{vertical\_flip.png}
+    \includegraphics[width=0.8\textwidth]{vertical\_flip.png}
     \caption{Effect of the data augmentation}
     \label{fig:augmentation}
 \end{figure}
-Note that here we only aim to augment the training set. The evaluation set is left unchanged.
 
 \subsection{Logistic regression}
 \label{subsec:logistic_regression}
@@ -113,7 +115,7 @@ where $p_i$ is the probability of the class $i$ in the subset.
 \label{sec:factorial_design}
 
 \subsection{Effects estimation}
-I use $2^4$ factorial design to analyse the results in this assignment. The factors tested are: applying scaling, decomposing the data to lower dimensions using PCA, applying data augmentation and different machine learning algorithms: logistic regression and decision tree classifier. The results are analyzed using the following formula:
+I use a $2^4$ factorial design to analyze the results in this assignment. The factors tested are: applying scaling, decomposing the data to lower dimensions using PCA, applying data augmentation and different machine learning algorithms: logistic regression and decision tree classifier. The results are analyzed using the following formula:
 \begin{equation}
     y = \beta_0 + \sum_{i=1}^{k} \beta_i x_i + \sum_{i=1}^{k} \sum_{j=i+1}^{k} \beta_{ij} x_i x_j + \sum_{i=1}^{k} \sum_{j=i+1}^{k} \sum_{l=j+1}^{k} \beta_{ijl} x_i x_j x_l + \beta_{1234} x_1 x_2 x_3 x_4
 \end{equation}
